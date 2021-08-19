@@ -1,23 +1,80 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState, useReducer } from 'react';
+import { getSecretWord } from './actions';
+import languageContext from './contexts/languageContext'
+import GuessedWords from './GuessedWords';
+import Congrats from './Congrats';
+import Input from './Input'
+import LanguagePicker from './LanguagePicker';
+
+
+/**
+ * @function reducer to update state, automatically called by dispatch
+ * @param {object} state - previous state
+ * @param {object} action - 'type' and 'payload' properties
+ * @return {object} - new state
+ */
+
+const reducer = (state, action) => {
+  switch(action.type) {
+    case 'setSecretWord':
+      return {
+        ...state,
+        secretWord: action.payload
+      }
+    case 'setLanguage':
+      return {
+        ...state,
+        language: action.payload
+      }
+    default:
+      throw new Error(`Invalid action type: ${action.type}`)
+  }
+}
+
 
 function App() {
+  const [state, dispatch] = useReducer(
+    reducer,
+    {
+      secretWord: null,
+      language: 'en',
+    }
+  )
+
+  const success = false
+  const guessedWords = []
+
+  const setSecretWord = secretWord => {
+    dispatch({ type: 'setSecretWord', payload: secretWord })
+  }
+  const setLanguage = language => {
+    dispatch({ type: 'setLanguage', payload: language})
+  }
+
+  useEffect(() => {
+    getSecretWord(setSecretWord)
+  }, [])
+
+  if(state.secretWord === null) {
+    return (
+      <div className="container" data-test="spinner">
+        <div className="spinner-border" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
+        <p>Loading secret word...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container" data-test="component-app">
+      <h1>Jotto</h1>
+      <languageContext.Provider value={state.language}>
+        <LanguagePicker setLanguage={setLanguage}/>
+        <Congrats success={success}/>
+        <Input success={success} secretWord={state.secretWord}/>
+        <GuessedWords guessedWords={guessedWords}/>
+      </languageContext.Provider>
     </div>
   );
 }
