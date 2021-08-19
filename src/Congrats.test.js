@@ -22,7 +22,6 @@ describe('languagePicker', () => {
 
     test('correctly renders congrats string in english', () => {
         const wrapper = setup({ success: true })
-        const message = findByTestAttr
         expect(wrapper.text()).toBe('Congratulations! You guessed the word!')
     })
     test('correctly renders congrats string in emoji', () => {
